@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Belle Shape - Treino</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #121212;
+            --primary-pink: #ff2d55;
+            --accent-pink: #ff85a1;
+            --text-white: #ffffff;
+            --text-gray: #a0a0a0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0; padding: 20px;
+            -webkit-user-select: none;
+            line-height: 1.4;
+        }
+
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1 { color: var(--primary-pink); margin: 0; font-size: 1.6rem; letter-spacing: 2px; font-weight: 900; }
+        
+        .menu-grid { display: grid; gap: 12px; }
+        .menu-card {
+            background: var(--card-bg);
+            border: 1px solid #222;
+            padding: 18px;
+            border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.2s;
+        }
+        .menu-card:active { background: #1a1a1a; border-color: var(--primary-pink); }
+        .day-tag { font-size: 0.65rem; background: var(--primary-pink); padding: 2px 6px; border-radius: 4px; font-weight: bold; color: white; }
+
+        .hidden { display: none; }
+        .exercise-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-pink);
+            box-shadow: 0 4px 15px rgba(255, 45, 85, 0.1);
+        }
+        .completed { opacity: 0.4; border-left-color: #444; filter: grayscale(1); }
+        
+        .method { color: var(--accent-pink); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .execution { background: #080808; padding: 10px; border-radius: 8px; font-size: 0.85rem; color: var(--text-gray); margin: 10px 0; border: 1px dashed #333; }
+        
+        .controls { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+        button { background: var(--primary-pink); border: none; color: white; padding: 10px 14px; border-radius: 10px; font-weight: bold; font-size: 1rem; }
+        .timer-btn { background: #222; border: 1px solid var(--primary-pink); font-size: 0.8rem; flex-grow: 1; color: var(--accent-pink); }
+        .done-btn { background: #28a745; width: 100%; margin-top: 15px; padding: 12px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .reps-display { font-weight: 900; font-size: 1.2rem; color: var(--primary-pink); min-width: 30px; text-align: center; }
+        .back-btn { margin-bottom: 15px; display: inline-block; color: var(--primary-pink); text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div id="home">
+        <div class="header">
+            <h1>BELLE SHAPE ⚡</h1>
+            <p style="font-size: 0.85rem; color: var(--text-gray); margin-top: 5px;">Academia Intermediário (Massa e Força)</p>
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-card" onclick="showWorkout('A', 'ÊNF. QUADRÍCEPS')">
+                <div><span class="day-tag">SEG / SEX</span><br><strong>TREINO A</strong><br><small style="color:var(--text-gray)">Foco em Quadríceps</small></div>
+                <span style="color:var(--primary-pink)">→</span>
+            </div>
+            <div class="menu-card" onclick="showWorkout('B', 'ÊNF. COSTAS/BÍCEPS')">
+                <div><span class="day-tag">TERÇA</span><br><strong>TREINO B</strong><br><small style="color:var(--text-gray)">Costas e Bíceps</small></div>
+                <span style="color:var(--primary-pink)">→</span>
+            </div>
+            <div class="menu-card" onclick="showWorkout('C', 'ÊNF. GLÚTEO/POST')">
+                <div><span class="day-tag">QUARTA</span><br><strong>TREINO C</strong><br><small style="color:var(--text-gray)">Glúteo e Posterior</small></div>
+                <span style="color:var(--primary-pink)">→</span>
+            </div>
+            <div class="menu-card" onclick="showWorkout('D', 'OMBRO/TRÍCEPS')">
+                <div><span class="day-tag">QUINTA</span><br><strong>TREINO D</strong><br><small style="color:var(--text-gray)">Ombro e Tríceps</small></div>
+                <span style="color:var(--primary-pink)">→</span>
+            </div>
+        </div>
+        
+        <p style="text-align:center; font-size:0.7rem; color:#444; margin-top:30px;">Periodização 5x/Semana: Repete o Treino A na Sexta</p>
+    </div>
+
+    <div id="workout-view" class="hidden">
+        <a href="#" class="back-btn" onclick="location.reload()">← VOLTAR AO MENU</a>
+        <h2 id="workout-title" style="color: var(--primary-pink); font-size: 1.3rem; margin-top: 5px;"></h2>
+        <div id="exercise-list"></div>
+    </div>
+
+    <script>
+        const exercisesData = {
+            'A': [
+                { name: "01. Leg Press 45", reps: "4x 8 a 10", rest: 120, method: "Progressão de Carga", exec: "Pernas paralelas. Aumentar peso gradualmente conforme as séries." },
+                { name: "02. Agachamento Smith + 03. Abs Parcial", reps: "3x 6+Drop+8 / 20", rest: 90, method: "Drop Set / Supersérie", exec: "Agachamento pernas paralelas. Após falhar, diminui carga e faz +8. Conjugado com abdominal com peso." },
+                { name: "04. Agachamento Búlgaro", reps: "4x 10 dir + 10 esq", rest: 90, method: "Tradicional", exec: "Uso de halteres e step na perna da frente para maior amplitude." },
+                { name: "05. Cadeira Extensora Unilateral", reps: "3x 10 dir + 10 esq", rest: 90, method: "Tradicional", exec: "Foco total na contração de cada perna isoladamente." },
+                { name: "06. Cadeira Extensora Bilateral", reps: "4x 8 (inércia) + 8 (bombeando)", rest: 120, method: "Dead Start", exec: "Sair do repouso total (inércia) e bombear duas vezes embaixo em cada repetição." }
+            ],
+            'B': [
+                { name: "01. Remada Máquina + 02. Rosca Bíceps Neutra", reps: "4x 10 + 10", rest: 120, method: "Isometria / Supersérie", exec: "Segurar 2 segundos no final do movimento da remada. Bíceps com pegada neutra (martelo)." },
+                { name: "03. Puxada Aberta + 04. Puxada Supinada", reps: "4x 10 + 10", rest: 120, method: "Supersérie / Isometria", exec: "Puxada supinada: segurar embaixo por 2 segundos em todas as repetições." },
+                { name: "05. Rosca Bíceps Cross (Barra Reta)", reps: "3x 10", rest: 90, method: "Tradicional", exec: "Movimento completo sem balançar o corpo." },
+                { name: "06. Crucifixo Invertido Máquina", reps: "3x 10", rest: 0, method: "Supersérie", exec: "Foco na parte posterior dos ombros." },
+                { name: "07. Abs Perna Cruzada Solo", reps: "12 dir + 12 esq", rest: 120, method: "Tradicional", exec: "Abdominal unilateral no solo." },
+                { name: "08. Remada Unilateral Banco", reps: "3x 8+8+8+8", rest: 60, method: "Tradicional", exec: "Halter no banco reto. Trocar de braço sem descanso." },
+                { name: "09. Extensão de Ombros no Cross", reps: "4x 10", rest: 60, method: "Tradicional", exec: "Com barra reta, braços esticados descendo até a coxa." }
+            ],
+            'C': [
+                { name: "01. Levantamento Terra Sumô", reps: "4x 10", rest: 90, method: "Progressão de Carga", exec: "Barra longa. Pés afastados. Foco em aumentar a carga gradualmente." },
+                { name: "02. Agachamento Barra Livre", reps: "4x 10", rest: 120, method: "Tradicional", exec: "Pernas levemente abduzidas para maior ativação de glúteo." },
+                { name: "03. Leg Press 45 Unilateral", reps: "3x 10 dir + 10 esq", rest: 120, method: "Super Slow", exec: "Execução extremamente lenta na descida e subida até embaixo." },
+                { name: "04. Stiff Barra Média", reps: "3x 10", rest: 90, method: "Tradicional", exec: "Manter a coluna reta e sentir o alongamento do posterior." },
+                { name: "05. Mesa Flexora", reps: "4x 10 + 5s Isometria", rest: 60, method: "Isometria", exec: "Fazer 10 reps e segurar 5 segundos contraído no final da última." },
+                { name: "06. Cadeira Abdutora", reps: "3x 10 + Drop + 10", rest: 60, method: "Drop Set", exec: "Fazer 10, diminuir o peso em 20-30% e fazer mais 10." },
+                { name: "07. Abs Parcial Máquina", reps: "5x 15", rest: 60, method: "Tradicional", exec: "Execução focada no abdômen superior." }
+            ],
+            'D': [
+                { name: "01. Abdução + 02. Flexão Ombros", reps: "3x 6+Drop+8 / Combo", rest: 120, method: "Drop Set / Supersérie", exec: "Abdução lateral com drop. Flexão frontal alternando 4 reps cada lado (3x)." },
+                { name: "03. Desenvolvimento Aberto Halter", reps: "3x 8 + Rest (10s) + 6", rest: 120, method: "Rest-Pause", exec: "Faz 8 reps, descansa 10 segundos e tenta mais 6 reps." },
+                { name: "04. Tríceps Francês + 05. Supino Reto Halter", reps: "3x 10 + 10", rest: 120, method: "Supersérie", exec: "Tríceps francês sentado ou em pé, seguido de supino reto com halteres." },
+                { name: "06. Tríceps Testa Halteres", reps: "4x 10", rest: 120, method: "Tradicional", exec: "Halteres descendo ao lado da testa para preservar o cotovelo." },
+                { name: "07. Remada Alta Cross", reps: "4x 10", rest: 120, method: "Tradicional", exec: "Barra reta, subindo até a altura do peito." },
+                { name: "08. Crucifixo Inclinado Halter", reps: "4x 10", rest: 90, method: "Tradicional", exec: "Banco a 45 graus, foco no peitoral superior." }
+            ]
+        };
+
+        const msgs = ["Igor agradece o shape", "Vai gostosa!", "Carnaval tá aí!", "Faz teu nome", "O verão só vai dá tu", "Gracyanne chora", "Que mulher!", "Bruta e delicada!", "Shape de milhões!"];
+
+        function showWorkout(id, title) {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('workout-view').classList.remove('hidden');
+            document.getElementById('workout-title').innerText = "TREINO " + id + " - " + title;
+            const list = document.getElementById('exercise-list');
+            list.innerHTML = "";
+            
+            exercisesData[id].forEach((ex, idx) => {
+                const div = document.createElement('div');
+                div.className = 'exercise-card';
+                div.id = `card-${idx}`;
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <span class="method">${ex.method}</span>
+                        <span id="timer-${idx}" style="color:var(--primary-pink); font-family:monospace; font-weight:bold;"></span>
+                    </div>
+                    <strong style="display:block; margin-top:5px; font-size:1.1rem;">${ex.name}</strong>
+                    <div class="execution">${ex.exec}</div>
+                    <div style="font-size:0.9rem; margin: 10px 0;">🎯 Alvo: <span style="color:var(--accent-pink); font-weight:bold;">${ex.reps}</span></div>
+                    <div class="controls">
+                        <button onclick="changeReps(${idx}, -1)">-</button>
+                        <span id="count-${idx}" class="reps-display">0</span>
+                        <button onclick="changeReps(${idx}, 1)">+</button>
+                        <button class="timer-btn" onclick="startTimer(${idx}, ${ex.rest})">⏱ DESCANSO (${ex.rest}s)</button>
+                    </div>
+                    <button class="done-btn" onclick="finishEx(${idx})">CONCLUIR SÉRIE</button>
+                `;
+                list.appendChild(div);
+            });
+            window.scrollTo(0, 0);
+        }
+
+        function changeReps(id, val) {
+            const el = document.getElementById(`count-${id}`);
+            el.innerText = Math.max(0, parseInt(el.innerText) + val);
+        }
+
+        function startTimer(id, sec) {
+            if (sec === 0) return;
+            let t = sec;
+            const display = document.getElementById(`timer-${id}`);
+            const intv = setInterval(() => {
+                display.innerText = `BORA EM ${t}s`;
+                if (t <= 0) { 
+                    clearInterval(intv); 
+                    display.innerText = "VAI!!"; 
+                    if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+                }
+                t--;
+            }, 1000);
+        }
+
+        function finishEx(id) {
+            const card = document.getElementById(`card-${id}`);
+            card.classList.add('completed');
+            const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+            alert(randomMsg);
+        }
+    </script>
+</body>
+</html>
